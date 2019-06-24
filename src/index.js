@@ -1,218 +1,24 @@
-import { GraphQLServer } from 'graphql-yoga';
+import { GraphQLServer, PubSub } from 'graphql-yoga';
 // GraphQLServer allows us to create a graphql server using the yoga library.
-import uuidv4 from 'uuid/v4';
-// version 4 of uuid - generates completely random ids.
 import db from './db';
+import Query from './resolvers/Query'
+import Mutation from './resolvers/Mutation';
+import Subscription from './resolvers/Subscription';
+import Post from './resolvers/Post';
+import User from './resolvers/User';
+import Comment from './resolvers/Comment';
+
+
+const pubsub = new PubSub();
 
 const resolvers = {
-  Query: {
-    users(parent, args, { db }, info) {
-      if (!args.query) return db.users;
-      return db.users.filter((user) => {
-        return user.name.toLowerCase().includes(args.query.toLowerCase());
-      })
-    },
-    me() {
-      return {
-        id: "123098",
-        name: "Mike",
-        email: "mike@example.com"
-      }
-    },
-    post() {
-      return {
-        id: "001",
-        title: "First Post Title",
-        body: "Some Lorem Ipsum for the post body",
-        published: false
-      }
-    },
-    posts(parent, args, { db }, info) {
-      if (!args.query) return db.posts;
-      return db.posts.filter((post) => {
-        const titleMatch = post.title.toLowerCase().includes(args.query.toLowerCase());
-        const bodyMatch = post.body.toLowerCase().includes(args.query.toLowerCase());
-        return titleMatch || bodyMatch
-      })
-    },
-    comments(parent, args, { db }, info) {
-      return db.comments;
-    },
-  },
-  Mutation: {
-    createUser(parent, args, { db }, info) {
-
-      // .some() will iterate over ctx.db.users to find any user.email that matches args.email
-      const emailTaken = db.users.some((user) => user.email === args.data.email);
-      //validate email address uniqueness:
-      if (emailTaken) throw new Error('Email taken')
-
-      const user = {
-        // define new user object
-        id: uuidv4(), // use uuidv4 to create a random user id
-        ...args.data
-      }
-
-      // adds new user object onto users array
-      db.users.push(user);
-
-      // returns new user
-      return user
-    },
-
-    deleteUser(parent, args, { db }, info) {
-      // find index will find the index for the user that's passed
-      const userIndex = db.users.findIndex((user) => user.id === args.id);
-      // when findIndex doesn't find an index for the user, it will default to (-1):
-      if (userIndex === -1) throw new Error('user not found');
-      // make sure we have an index for the user that get's passed in, then:
-
-      // remove user from array
-      const deletedUsers = db.users.splice(userIndex, 1)
-      // use splice() to remove user with matching id, and only remove 1 user.
-
-
-      // remove all associated posts
-
-      db.posts = db.posts.filter((post) => {
-        // use array.filer() to filter out any data associated with this user.
-        const match = post.author === args.id;
-
-        // when deleting a post that is a match, first remove all associated comments:
-        if (match) return db.comments = db.comments.filter((comment) => comment.post !== post.id);
-        // keep all comments that do not match the post id.
-
-        // return false when we find a match - to filter out the matching post
-        return !match
-      });
-
-      // remove all other comments associated to deleted user
-      // if this user has comments on other user's posts, remove those comments as well:
-      db.comments = db.comments.filter((comment) => comment.author !== args.id);
-
-      // return first item in array of deletedUsers
-      return deletedUsers[0];
-    },
-
-    createPost(parent, args, { db }, info) {
-
-      // verify the user exists, if user id matches the id of the author.
-      const userExists = db.users.some((user) => user.id === args.data.author);
-      // exit if user not found.
-
-      if (!userExists) throw new Error('User not found');
-      // define new post from passed in values:
-
-      const post = {
-        id: uuidv4(),
-        ...args.data
-      }
-
-      // add new post to posts array
-      db.posts.push(post)
-
-      // return new post
-      return post
-    },
-
-    deletePost(parent, args, { db }, info) {
-      // check if post exists
-      const postIndex = db.posts.findIndex((post) => post.id === args.id)
-      // throw error if post does not exist
-      if (postIndex === -1) throw new Error('post not found')
-      // remove the deleted post
-      const deletedPosts = db.posts.splice(postIndex, 1);
-      // remove all comments associated with the post.
-      db.comments = db.comments.filter((comment) => comment.post !== args.id)
-
-      // return first item off deletedPosts array
-      return deletedPosts[0]
-    },
-
-    createComment(parent, args, { db }, info) {
-
-      const userExists = db.users.some((user) => user.id === args.data.author);
-      // post must exist and must be published:
-      const postExists = db.posts.some((post) => post.id === args.data.post && post.published === true);
-
-      if (!userExists) throw new Error('User not found');
-      if (!postExists) throw new Error('post not found');
-
-      const comment = {
-        id: uuidv4(),
-        ...args.data
-      }
-      db.comments.push(comment);
-      return comment;
-    },
-
-    deleteComment(parent, args, { db }, info) {
-      const commentsIndex = db.comments.findIndex((comment) => comment.id === args.id);
-      if (commentsIndex === -1) throw new Error('comment does not exist');
-      const deletedComments = db.comments.splice(commentsIndex, 1);
-      return deletedComments[0];
-    },
-  },
-  Post: {
-    author(parent, args, { db }, info) {
-
-      // we can iterate over each post object using the 'parent' argument: (parent = post);
-      return db.users.find((user) => {
-
-        // use find to iterate over the users, to match to our author id:
-        return user.id === parent.author;
-
-      });
-    },
-    comments(parent, args, { db }, info) {
-
-      // we can iterate over each comment associated with the post: (parent: post)
-      return db.comments.filter((comment) => {
-
-        // filter any comments whose post value matches parent(post).id;
-        return comment.post === parent.id;
-
-      })
-    }
-  },
-  User: {
-
-    posts(parent, args, { db }, info) {
-
-      // we can iterate over each post associated with this user: (parent: user)
-      return db.posts.filter((post) => {
-
-        // filter any posts whose author matches parent(user).id;
-        return post.author === parent.id;
-
-      })
-    },
-
-    comments(parent, args, { db }, info) {
-
-      // we can iterate over each comment associated with the user: (parent: user)
-      return db.comments.filter((comment) => {
-
-        // filter any comments whose author matches parent(user).id;
-        return comment.author === parent.id;
-
-      })
-    },
-
-  },
-  Comment: {
-    author(parent, args, { db }, info) {
-      return db.users.find((user) => {
-        return user.id = parent.author;
-      })
-    },
-    post(parent, args, { db }, info) {
-      return db.posts.find((post) => {
-        return post.id === parent.post
-      })
-    }
-  }
-};
+  Query,
+  Mutation,
+  Subscription,
+  Post,
+  User,
+  Comment,
+}
 
 
 const server = new GraphQLServer({
@@ -220,7 +26,8 @@ const server = new GraphQLServer({
   typeDefs: './src/schema.graphql',
   resolvers,
   context: {
-    db // setting database to context.
+    db, // setting database to context.
+    pubsub  // making pubsub instance accessible to resolvers
   }
 });
 

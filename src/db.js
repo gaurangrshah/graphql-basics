@@ -1,72 +1,59 @@
-// Demo user data
-let users = [
-  {
-    id: '1',
-    name: 'Jane',
-    email: 'info@infoesque.net'
-  },
-  {
-    id: '2',
-    name: 'John',
-    email: 'info2@infoesque.net'
-  },
-  {
-    id: '3',
-    name: 'Mike',
-    email: 'info3@infoesque.net'
-  }
-]
+const users = [{
+  id: '1',
+  name: 'Andrew',
+  email: 'andrew@example.com',
+  age: 27
+}, {
+  id: '2',
+  name: 'Sarah',
+  email: 'sarah@example.com'
+}, {
+  id: '3',
+  name: 'Mike',
+  email: 'mike@example.com'
+}]
 
-let posts = [
-  {
-    id: '001',
-    title: 'Post Title 1',
-    body: 'Some Lorem for post 1',
-    published: true,
-    author: '1'
-  },
-  {
-    id: '002',
-    title: 'Post Title 2',
-    body: 'Some Lorem for post 2',
-    published: true,
-    author: '1'
-  },
-  {
-    id: '003',
-    title: 'Post Title 3',
-    body: 'Some Lorem for post 3',
-    published: false,
-    author: '3'
-  }
-]
+const posts = [{
+  id: '10',
+  title: 'GraphQL 101',
+  body: 'This is how to use GraphQL...',
+  published: true,
+  author: '1'
+}, {
+  id: '11',
+  title: 'GraphQL 201',
+  body: 'This is an advanced GraphQL post...',
+  published: false,
+  author: '1'
+}, {
+  id: '12',
+  title: 'Programming Music',
+  body: '',
+  published: true,
+  author: '2'
+}]
 
-let comments = [
-  {
-    id: '001',
-    text: 'comment for 1',
-    author: '2',
-    post: '001'
-  },
-  {
-    id: '002',
-    text: 'comment for 2',
-    author: '3',
-    post: '003'
-  },
-  {
-    id: '003',
-    text: 'comment for 3',
-    author: '3',
-    post: '001'
-  },
-  {
-    id: '004',
-    text: 'comment for 4',
-    author: '1',
-    post: '003'
-  }
-]
+const comments = [{
+  id: '102',
+  text: 'This worked well for me. Thanks!',
+  author: '3',
+  post: '10'
+}, {
+  id: '103',
+  text: 'Glad you enjoyed it.',
+  author: '1',
+  post: '10'
+}, {
+  id: '104',
+  text: 'This did no work.',
+  author: '2',
+  post: '11'
+}, {
+  id: '105',
+  text: 'Nevermind. I got it to work.',
+  author: '1',
+  post: '12'
+}]
 
 const db = {
   users,
