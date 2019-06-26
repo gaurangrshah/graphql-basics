@@ -1,19 +1,18 @@
 const Subscription = {
-  count: {
+  comment: {
+    subscribe(parent, { postId }, { db, pubsub }, info) {
+      // 1. check if post exists & is published
+      const post = db.posts.find((post) => post.id === postId && post.published)
+      if (!post) throw new Error('no post found');
+
+      // 2. return asyncIterator subscribed to a channelName:
+      return pubsub.asyncIterator(`comment ${postId}`)
+      // using template strings to dynamically inject postId into channelName
+    }
+  },
+  post: {
     subscribe(parent, args, { pubsub }, info) {
-      let count = 0
-
-      setInterval(() => {
-        count++   // increments the value of count each time setInterval fires.
-        pubsub.publish('count', { // 1st arg is the `channelName`
-          //2nd arg is an object with the data that is updated/published:
-          count, // obj/prop shorthand, passing in the value of count to be published.
-        }) // publishes the updates, to all subscribers.
-      }, 1000); // sets interval to 1sec.
-
-      return pubsub.asyncIterator('count')
-      // `asyncIterator()` takes an argument called `channelName`
-      // the published data is then accessible by any subscribers to each `channelName`
+      return pubsub.asyncIterator('post');
     }
   }
 }
