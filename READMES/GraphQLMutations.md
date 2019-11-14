@@ -1,3 +1,8 @@
+---
+group: graph-basics
+published: true
+---
+
 # Mutations in GraphQL
 
 ---------------------------------
