@@ -1,3 +1,8 @@
+---
+group: graph-basics
+published: true
+---
+
 # Enum Type
 
 ---------------------------------
