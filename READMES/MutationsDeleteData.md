@@ -1,3 +1,8 @@
+---
+group: graph-basics
+published: true
+---
+
 # Delete Data with Mutations
 
 ---------------------------------
