@@ -1,3 +1,8 @@
+---
+group: graph-basics
+published: true
+---
+
 The goal of these challenges is going to be to setup a new Comments type and establish its relationship between users and posts.
 
 <u>Part 1</u>
